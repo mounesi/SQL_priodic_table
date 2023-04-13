@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+PSQL="psql -X --username=freecodecamp --dbname=periodic_table -t --no-align -c"
     
 
 function display_element_info {
@@ -23,17 +23,41 @@ if [ -z "$1" ]; then
 else
     # Input provided - do something else
     #echo "Input provided: $1"
-
-    # Check if the parameter is a valid input
-    case "$1" in
-        1|H|Hydrogen)
-            # Display the element information
-            display_element_info "Hydrogen" "1" "1.008" "-259.1" "-252.9" "nonmetal" "H"
-            ;;
-        *)
-            # Invalid input - display an error message
-            echo "I could not find that element in the database."
-            ;;
-    esac
-
+    if [[ "$1" == "1" || "$1" == "H" || "$1" == "Hydrogen" ]]; then
+        # Display the element information
+        display_element_info "Hydrogen" "1" "1.008" "-259.1" "-252.9" "nonmetal" "H"
+    else
+        case "$1" in
+            [0-9]*)
+                # Input is a number - echo HI
+                result=$($PSQL "SELECT name, atomic_number, atomic_mass, melting_point_celsius, boiling_point_celsius, type, symbol FROM properties FULL JOIN elements USING (atomic_number) FULL JOIN types USING (type_id) WHERE atomic_number = $1")
+                #echo $result
+                ;;
+            [A-Za-z][A-Za-z])
+                result=$($PSQL "SELECT name, atomic_number, atomic_mass, melting_point_celsius, boiling_point_celsius, type, symbol FROM properties FULL JOIN elements USING (atomic_number) FULL JOIN types USING (type_id) WHERE symbol = '$1'")
+                #echo $result
+                ;;
+            *)
+                result=$($PSQL "SELECT name, atomic_number, atomic_mass, melting_point_celsius, boiling_point_celsius, type, symbol FROM properties FULL JOIN elements USING (atomic_number) FULL JOIN types USING (type_id) WHERE name = '$1'")
+                ;;
+        esac
+      
+      if [ -n "$result" ];
+      then
+          echo -e "$result" | while read -r line
+          do
+            ele_name=$(echo $line | cut -f 1 -d '|')
+            ato_num=$(echo $line | cut -f 2 -d '|')
+            ato_mas=$(echo $line | cut -f 3 -d '|')
+            mel_pnt=$(echo $line | cut -f 4 -d '|')
+            bol_pnt=$(echo $line | cut -f 5 -d '|')
+            typ_name=$(echo $line | cut -f 6 -d '|')
+            sym_name=$(echo $line | cut -f 7 -d '|') 
+            
+            display_element_info $ele_name $ato_num $ato_mas $mel_pnt $bol_pnt $typ_name $sym_name
+          done
+      else
+          echo I could not find that element in the database.
+      fi      
+    fi
 fi
