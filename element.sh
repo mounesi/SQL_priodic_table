@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo Please provide an element as an argument.
 
 function display_element_info {
@@ -12,3 +14,4 @@ function display_element_info {
 
   echo "The element with atomic number $atomic_number is $element_name ($symbol_name). It's a $type_name, with a mass of $atomic_mass amu. $element_name has a melting point of $melting_point celsius and a boiling point of $boiling_point celsius." 
 }
+
