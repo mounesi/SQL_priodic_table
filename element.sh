@@ -1,1 +1,1 @@
-echo Please provide and element a san argument.
+echo Please provide an element as an argument.
